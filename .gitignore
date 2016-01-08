@@ -1,0 +1,16 @@
+/target
+/lib
+/classes
+/checkouts
+pom.xml
+pom.xml.asc
+*.jar
+*.class
+/.lein-*
+/.nrepl-port
+test/resources/js
+resources/public/js
+dev-resources/public/js
+*/out/
+.repl*
+.*repl/
