@@ -18,7 +18,8 @@
                  [racehub/om-bootstrap "0.5.3"]]
   :plugins [[lein-ring "0.9.7"]
             [lein-cljsbuild "1.1.2"]
-            [lein-pdo "0.1.1"]]
+            [lein-pdo "0.1.1"]
+            [lein-doo "0.1.6"]]
   :hooks [leiningen.cljsbuild]
   :aliases {"up"     ["pdo" "cljsbuild" "auto" "dev," "ring" "server-headless"]
             "brepl"  ["trampoline" "cljsbuild" "repl-listen"]
@@ -27,23 +28,31 @@
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]
   :cljsbuild {:builds {:dev {:source-paths ["src/cljs"]
-                             :compiler {:output-to "dev-resources/public/js/app.js"
-                                        :output-dir "dev-resources/public/js/out"
+                             :compiler {:output-to "env/dev/resources/public/js/app.js"
+                                        :output-dir "env/dev/resources/public/js/out"
                                         :optimizations :none
                                         :source-map true
                                         :pretty-print true}}
                        :test {:source-paths ["src/cljs" "test/cljs"]
-                              :compiler {:output-to "test/resources/js/test.js"
+                              :compiler {:output-to "env/test/resources/public/js/test.js"
+                                         :output-dir "env/test/resources/public/js/out"
+                                         :main jodadbg.runner
                                          :optimizations :whitespace
                                          :pretty-print true}}
                        :release {:source-paths ["src/cljs"]
                                  :compiler {:output-to "resources/public/js/app.js"
                                             :optimizations :advanced
                                             :pretty-print false}}}
-              :test-commands {"unit" ["slimerjs" "-jsconsole"
-                                      "runner/slimer/test.js"
-                                      "test/resources/test.html"]}}
+              :test-commands {"unit" ["lein" "doo"
+                                      "slimer" "test" "once"]}}
   :profiles
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
-                        [ring/ring-mock "0.3.0"]]}
-   :test {:resource-paths ["test/resources"]}})
+                        [ring/ring-mock "0.3.0"]
+                        [doo "0.1.6"]]
+         :resource-paths ["env/dev/resources"]}
+   :test {:resource-paths ["env/test/resources"]}}
+  :target-path "target/%s"
+  :clean-targets ^{:protect false} ["target"
+                                    "resources/public/js"
+                                    "env/dev/resources/public/js"
+                                    "env/test/resources/public/js" ])

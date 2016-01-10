@@ -8,9 +8,7 @@ pom.xml.asc
 *.class
 /.lein-*
 /.nrepl-port
-test/resources/js
-resources/public/js
-dev-resources/public/js
-*/out/
 .repl*
 .*repl/
+resources/public/js
+env/*/resources/public/js

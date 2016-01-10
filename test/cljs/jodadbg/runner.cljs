@@ -1,11 +1,5 @@
 (ns jodadbg.runner
-  (:require [cljs.test :refer-macros [run-all-tests]]))
+  (:require [doo.runner :refer-macros [doo-all-tests]]
+            [jodadbg.core-test]))
 
-(def ^:private success 0)
-
-(enable-console-print!)
-
-(defn ^:export run
-  []
-  (run-all-tests #"^jodadbg\..*-test$")
-  success)
+(doo-all-tests #"^jodadbg\..*?-test")

@@ -6,14 +6,7 @@
             [om.core :as om]
             [om.dom  :as dom]
             [om-bootstrap.panel :as p]
-            [om-bootstrap.input :as i]
-            [clojure.browser.repl :as repl]))
-
-;; TODO: Gate this around development mode
-(enable-console-print!)
-(def ^:dynamic *repl*
-  "http://localhost:9000/repl")
-(repl/connect *repl*)
+            [om-bootstrap.input :as i]))
 
 (def now
   (date/now))

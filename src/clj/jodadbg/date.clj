@@ -8,7 +8,7 @@
                                  DateTimeFormatterBuilder)))
 
 (defmacro timezone
-  "(joda wrapper) Returns the corresponding DateTimeZone for the given ID"
+  "Returns the corresponding DateTimeZone for the given ID"
   [^String id]
   `(DateTimeZone/forID ~id))
 
@@ -16,7 +16,7 @@
   (timezone "UTC"))
 
 (defmacro with-timezone
-  "(joda wrapper) Returns an instance of the given DateTimeFormatter in the specified DateTimeZone"
+  "Returns an instance of the given DateTimeFormatter in the specified DateTimeZone"
   [^DateTimeFormatter fmt ^DateTimeZone dtz]
   `(.withZone ~fmt ~dtz))
 
@@ -24,7 +24,7 @@
   (ISODateTimeFormat/dateTime))
 
 (defmacro pattern-formatter
-  "(joda wrapper) Returns a DateTimeFormatter for the specified pattern"
+  "Returns a DateTimeFormatter for the specified pattern"
   [^String pattern]
   `(DateTimeFormat/forPattern ~pattern))
 
