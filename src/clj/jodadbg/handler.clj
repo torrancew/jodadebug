@@ -19,8 +19,8 @@
               "UNIX"    date/unix-parser
               "UNIX_MS" date/unix-ms-parser
               (date/pattern-formatter pattern))
-        mil (date/parse-timestamp timestamp (date/with-timezone fmt dtz))]
-    (response {:isotime (date/millis->string mil date/utc)})))
+        dt (date/string->date-time timestamp (date/with-timezone fmt dtz))]
+    (response {:isotime (date/date-time->string dt)})))
 
 (defroutes app-routes
   (GET "/" []

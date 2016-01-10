@@ -6,20 +6,14 @@
 (def ^:dynamic *ref-ts*
   "2015-12-25T00:00:00.000Z")
 
-(def ^:dynamic *ref-dt*
-  (DateTime. 2015 12 25
-             0 0 0 utc))
+(def ^:dynamic *ref-dt* (DateTime. 2015 12 25 0 0 0 utc))
 
-(deftest parse-timestamp-test
-  (let [date-time (-> *ref-ts*
-                      parse-timestamp
-                      (DateTime. utc))]
-    (is (= date-time
+(deftest string->date-time-test
+  (testing "Converting an ISO string for UTC into a DateTime object"
+    (is (= (string->date-time *ref-ts*)
            *ref-dt*))))
 
-(deftest millis->string-test
-  (let [timestamp (-> *ref-dt*
-                      .getMillis
-                      millis->string)]
-    (is (= timestamp
+(deftest date-time->string-test
+  (testing "Converting a DateTime object into ISO string representation for UTC"
+    (is (= (date-time->string *ref-dt*)
            *ref-ts*))))

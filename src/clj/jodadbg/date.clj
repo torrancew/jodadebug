@@ -1,5 +1,6 @@
 (ns jodadbg.date
-  (:import (org.joda.time DateTimeZone)
+  (:import (org.joda.time DateTime
+                          DateTimeZone)
            (org.joda.time.format DateTimeParser
                                  DateTimePrinter
                                  DateTimeFormat
@@ -65,14 +66,16 @@
 (def unix-ms-parser
   (proxy-formatter #(Integer/parseInt %)))
 
-(defn parse-timestamp
-  ([^String timestamp] (->> strict-iso-parser
-                            (parse-timestamp timestamp)))
+(defn string->date-time
+  "Converts the given String into a DateTimeObject in UTC, using the given DateTimeFormatter (default: ISODateTimeFormat)"
+  ([^String timestamp] (string->date-time timestamp strict-iso-parser))
   ([^String timestamp ^DateTimeFormatter formatter]
-     (.parseMillis formatter timestamp)))
+     (-> (with-timezone formatter utc)
+         (.parseDateTime timestamp))))
 
-(defn millis->string
-  ([^long millis]
-     (millis->string millis utc))
-  ([^long millis ^DateTimeZone dtz]
-     (.print (with-timezone iso-printer dtz) millis)))
+(defn date-time->string
+  "Converts the given DateTime object into an ISO string for the given DateTimeZone (default: UTC)"
+  ([^DateTime dt]
+     (date-time->string dt utc))
+  ([^DateTime dt ^DateTimeZone dtz]
+     (.print (with-timezone iso-printer dtz) dt)))
