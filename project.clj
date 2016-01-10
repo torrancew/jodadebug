@@ -41,7 +41,7 @@
                                             :optimizations :advanced
                                             :pretty-print false}}}
               :test-commands {"unit" ["slimerjs" "-jsconsole"
-                                      "test/runner/slimer.js"
+                                      "runner/slimer/test.js"
                                       "test/resources/test.html"]}}
   :profiles
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]

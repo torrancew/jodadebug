@@ -1,6 +1,7 @@
 (ns jodadbg.core
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [cljs.core.async :refer [put! chan <!]]
+            [cljs-http.client :as http]
             [jodadbg.date :as date]
             [om.core :as om]
             [om.dom  :as dom]
@@ -9,6 +10,7 @@
             [clojure.browser.repl :as repl]))
 
 ;; TODO: Gate this around development mode
+(enable-console-print!)
 (def ^:dynamic *repl*
   "http://localhost:9000/repl")
 (repl/connect *repl*)
@@ -19,7 +21,7 @@
 (defonce app-state
   (atom
     {:timestamp nil
-     :format nil
+     :pattern "ISO8601"
      :timezone "UTC"
      :isotime now}))
 
@@ -31,43 +33,58 @@
                          (dom/a #js {:href "#" :className "navbar-brand"}
                                 "jodadbg")))))
 
+(defn handle-change
+  [k e owner]
+  (swap! app-state
+         assoc k (.. e -target -value))
+  (go (let [timestamp (:timestamp @app-state)
+            pattern (:pattern @app-state)
+            timezone (:timezone @app-state)
+            response (<! (http/get "/match" {:query-params {"timestamp" timestamp
+                                                            "pattern" pattern
+                                                            "timezone" timezone}}))]
+        (when (= 200 (:status response))
+          (swap! app-state
+                 assoc :isotime (-> response
+                                    :body
+                                    :body
+                                    :isotime
+                                    date/string->date-time))))))
+
 (defn inputs
   [data owner]
-  (let [timestamp (:timestamp @data)
-        formatstr (:format    @data)]
-    (om/component
-      (dom/form nil
-                (i/input
-                  {:feedback? true
-                   :type "text"
-                   :value (:timestamp @data)
-                   :label "Timestamp String"
-                   :placeholder "2015-12-25T00:00:00.000Z"
-                   :help "A sample timestamp to parse"
-                   :on-change #()})
-                (i/input
-                  {:feedback? true
-                   :type "text"
-                   :value (:format @data)
-                   :label "Date Filter Format String"
-                   :placeholder "ISO8601"
-                   :help "A single format string to test"
-                   :on-change #()})))))
+  (om/component
+    (dom/form nil
+              (i/input
+                {:feedback? true
+                 :type "text"
+                 :value (:timestamp @data)
+                 :label "Timestamp String"
+                 :placeholder (date/date-time->string now)
+                 :help "A sample timestamp to parse"
+                 :on-change #(handle-change :timestamp % owner)})
+              (i/input
+                {:feedback? true
+                 :type "text"
+                 :value (:pattern @data)
+                 :label "Date Filter Format String"
+                 :placeholder "ISO8601"
+                 :help "A single pattern string to test"
+                 :on-change #(handle-change :pattern % owner)}))))
 
 (defn matches
   [data owner]
-  (let [isotime (:isotime @data)]
-    (om/component
-      (dom/div nil
-               (p/panel {:header "Parsed Timestamps"}
-                 (p/panel {:header "UTC Time"
-                           :bs-style "success"}
-                          (date/date-time->string isotime))
-                 (p/panel {:header "(Browser) Local Time"
-                           :bs-style "info"}
-                          (-> isotime
-                              date/utc-to-local
-                              date/date-time->string)))))))
+  (om/component
+    (dom/div nil
+             (p/panel {:header "Parsed Timestamps"}
+                      (p/panel {:header "UTC Time"
+                                :bs-style "success"}
+                               (date/date-time->string (:isotime @data)))
+                      (p/panel {:header "(Browser) Local Time"
+                                :bs-style "info"}
+                               (-> (:isotime @data)
+                                   date/utc-to-local
+                                   date/date-time->string))))))
 
 (defn ^:export main
   [& args]
