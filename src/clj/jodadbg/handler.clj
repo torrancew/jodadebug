@@ -19,7 +19,7 @@
               "UNIX"    date/unix-parser
               "UNIX_MS" date/unix-ms-parser
               (date/pattern-formatter pattern))
-        dt (date/string->date-time timestamp (date/with-timezone fmt dtz))]
+        dt (date/string->date-time timestamp fmt dtz)]
     (response {:isotime (date/date-time->string dt)})))
 
 (defroutes app-routes

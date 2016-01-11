@@ -15,7 +15,8 @@
                  [cljs-http "0.1.39"]
                  [com.andrewmcveigh/cljs-time "0.4.0"]
                  [org.omcljs/om "1.0.0-alpha28"]
-                 [racehub/om-bootstrap "0.5.3"]]
+                 [racehub/om-bootstrap "0.5.3"]
+                 [doo "0.1.6"]]
   :plugins [[lein-ring "0.9.7"]
             [lein-cljsbuild "1.1.2"]
             [lein-pdo "0.1.1"]
@@ -47,8 +48,7 @@
                                       "slimer" "test" "once"]}}
   :profiles
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
-                        [ring/ring-mock "0.3.0"]
-                        [doo "0.1.6"]]
+                        [ring/ring-mock "0.3.0"]]
          :resource-paths ["env/dev/resources"]}
    :test {:resource-paths ["env/test/resources"]}}
   :target-path "target/%s"

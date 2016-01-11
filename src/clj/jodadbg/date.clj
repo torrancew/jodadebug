@@ -13,69 +13,84 @@
   [^String id]
   `(DateTimeZone/forID ~id))
 
-(def utc
-  (timezone "UTC"))
+(def utc (timezone "UTC"))
 
-(defmacro with-timezone
+(defmacro ^:private with-timezone
   "Returns an instance of the given DateTimeFormatter in the specified DateTimeZone"
   [^DateTimeFormatter fmt ^DateTimeZone dtz]
   `(.withZone ~fmt ~dtz))
 
-(def iso-printer
+(def ^:private iso-printer
   (ISODateTimeFormat/dateTime))
+
+(def ^:private strict-iso-parser
+  (ISODateTimeFormat/dateTimeParser))
 
 (defmacro pattern-formatter
   "Returns a DateTimeFormatter for the specified pattern"
   [^String pattern]
   `(DateTimeFormat/forPattern ~pattern))
 
-(defmacro multi-formatter
-  "Returns a DateTimeFormatter composed of the provided patterns"
-  [formatters]
-  `(let [builder# (new DateTimeFormatterBuilder)]
-    (->> ~formatters
-         (map #(.getParser %))
-         (into-array DateTimeParser)
-         (.append builder# (.getPrinter (with-timezone iso-printer utc))))
-    (.toFormatter builder#)))
-
-(def ^:private strict-iso-parser
-  (ISODateTimeFormat/dateTimeParser))
-
 (def ^:private almost-iso-parsers
   (map #(pattern-formatter %)
-       '("yyyy-MM-dd HH:mm:ss.SSSZ" "yyyy-MM-dd HH:mm:ss.SSS"
-         "yyyy-MM-dd HH:mm:ss,SSSZ" "yyyy-MM-dd HH:mm:ss,SSS")))
+       (conj '()
+             "yyyy-MM-dd HH:mm:ss.SSSZ" "yyyy-MM-dd HH:mm:ss.SSS"
+             "yyyy-MM-dd HH:mm:ss,SSSZ" "yyyy-MM-dd HH:mm:ss,SSS")))
 
-(defmacro proxy-formatter
-  "Yields a proxy of a DateTimeFormatterusing the specified parse-fn as `parseMillis`"
-  [parse-fn]
-  `(proxy [DateTimeFormatter]
-          [^DateTimePrinter (.getPrinter (with-timezone iso-printer utc))
-           ^DateTimeParser  (.getParser   strict-iso-parser)]
-          (parseMillis
-            [^String timestamp#]
-            (~parse-fn timestamp#))))
+(defmacro ^:private multi-formatter
+  "Returns a DateTimeFormatter composed of the provided patterns"
+  [formatters]
+  `(let [fmt# (with-timezone iso-printer utc)
+         bld# (new DateTimeFormatterBuilder)]
+     (->> ~formatters
+          (map #(.getParser %))
+          (into-array DateTimeParser)
+          (.append bld# (.getPrinter fmt#)))
+     (.toFormatter bld#)))
 
 (def iso-parser
   (multi-formatter (cons strict-iso-parser almost-iso-parsers)))
 
+(defmacro ^:private proxy-formatter
+  "Yields a proxy of a DateTimeFormatter using the specified parse-fn as `parseDateTime`"
+  [parse-fn]
+  `(proxy [DateTimeFormatter]
+     [^DateTimePrinter (.getPrinter (with-timezone iso-printer utc))
+      ^DateTimeParser  (.getParser   strict-iso-parser)]
+     (withZone
+       [^DateTimeZone dtz#]
+       ~'this)
+     (parseDateTime
+       [^String timestamp#]
+       (~parse-fn timestamp#))))
+
 (def unix-parser
-  (proxy-formatter #(* 1000 (Integer/parseInt %))))
+  (proxy-formatter #(-> (Long/parseLong %)
+                        (* 1000)
+                        (DateTime.)
+                        (.toDateTime utc))))
 
 (def unix-ms-parser
-  (proxy-formatter #(Integer/parseInt %)))
+  (proxy-formatter #(-> (Long/parseLong %)
+                        (DateTime.)
+                        (.toDateTime utc))))
 
 (defn string->date-time
-  "Converts the given String into a DateTimeObject in UTC, using the given DateTimeFormatter (default: ISODateTimeFormat)"
-  ([^String timestamp] (string->date-time timestamp strict-iso-parser))
+  "Converts the given String into a DateTimeObject in UTC, using the given DateTimeFormatter (default: ISODateTimeFormat) and the given DateTimeZone (default: UTC)"
+  ([^String timestamp] (string->date-time timestamp iso-parser))
   ([^String timestamp ^DateTimeFormatter formatter]
-     (-> (with-timezone formatter utc)
-         (.parseDateTime timestamp))))
+   (string->date-time timestamp formatter utc))
+  ([^String timestamp ^DateTimeFormatter formatter ^DateTimeZone dtz]
+   (-> formatter
+       (with-timezone dtz)
+       (.parseDateTime timestamp)
+       (.toDateTime utc))))
 
 (defn date-time->string
   "Converts the given DateTime object into an ISO string for the given DateTimeZone (default: UTC)"
   ([^DateTime dt]
-     (date-time->string dt utc))
+   (date-time->string dt utc))
   ([^DateTime dt ^DateTimeZone dtz]
-     (.print (with-timezone iso-printer dtz) dt)))
+   (-> iso-printer
+       (with-timezone dtz)
+       (.print dt))))
