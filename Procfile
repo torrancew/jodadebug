@@ -1,1 +1,1 @@
-web: java $JVM_OPTS -cp target/jodadbg-standalone.jar clojure.main -m jodadbg.handler
+web: java $JVM_OPTS -cp target/uberjar/jodadbg-standalone.jar clojure.main -m jodadbg.handler
