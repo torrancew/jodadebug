@@ -3,7 +3,7 @@
             [compojure.route :as route]
             [compojure.core           :refer [GET defroutes]]
             [ring.util.response       :refer [content-type response resource-response]]
-            [ring.middleware.json     :refer [wrap-json-body wrap-json-response]]
+            [ring.middleware.json     :refer [wrap-json-response]]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [ring.middleware.content-type :refer [wrap-content-type]]
@@ -32,7 +32,6 @@
 
 (def app
   (-> app-routes
-      (wrap-json-body)
       (wrap-json-response)
       (wrap-resource "public")
       (wrap-content-type)
