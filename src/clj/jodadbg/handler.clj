@@ -1,6 +1,8 @@
 (ns jodadbg.handler
   (:require [jodadbg.date    :as date]
             [compojure.route :as route]
+            [ring.adapter.jetty :as jetty]
+            [environ.core             :refer [env]]
             [compojure.core           :refer [GET defroutes]]
             [ring.util.response       :refer [content-type response resource-response]]
             [ring.middleware.json     :refer [wrap-json-response]]
@@ -37,3 +39,8 @@
       (wrap-content-type)
       (wrap-not-modified)
       (wrap-defaults api-defaults)))
+
+(defn -main
+  [& [port]]
+  (let [port (Integer. (or port (env :port) 5000))]
+    (jetty/run-jetty app {:port port :join? false})))

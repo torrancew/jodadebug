@@ -1,14 +1,16 @@
 (defproject jodadbg "0.1.0"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "A webapp for debugging Joda parser patterns"
+  :url "https://github.com/torrancew/jodadebug"
   :min-lein-version "2.0.0"
   :dependencies [;; Backend
                  [org.clojure/clojure "1.7.0"]
                  [clj-time "0.11.0"]
                  [compojure "1.4.0"]
                  [ring/ring-core "1.4.0"]
+                 [ring/ring-jetty-adapter "1.4.0"]
                  [ring/ring-json "0.4.0"]
                  [ring/ring-defaults "0.1.5"]
+                 [environ "1.0.1"]
                  ;; Frontend
                  [org.clojure/clojurescript "1.7.189"]
                  [org.clojure/core.async "0.2.374"]
@@ -20,8 +22,9 @@
   :plugins [[lein-ring "0.9.7"]
             [lein-cljsbuild "1.1.2"]
             [lein-pdo "0.1.1"]
-            [lein-doo "0.1.6"]]
-  :hooks [leiningen.cljsbuild]
+            [lein-doo "0.1.6"]
+            [environ/environ.lein "0.3.1"]]
+  :hooks [leiningen.cljsbuild environ.leiningen.hooks]
   :aliases {"up"     ["pdo" "cljsbuild" "auto" "dev," "ring" "server-headless"]
             "brepl"  ["trampoline" "cljsbuild" "repl-listen"]
             "jsrepl" ["trampoline" "cljsbuild" "repl-rhino"]}
@@ -46,11 +49,14 @@
                                             :pretty-print false}}}
               :test-commands {"unit" ["lein" "doo"
                                       "slimer" "test" "once"]}}
+  :uberjar-name "jodadbg-standalone.jar"
   :profiles
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                         [ring/ring-mock "0.3.0"]]
          :resource-paths ["env/dev/resources"]}
-   :test {:resource-paths ["env/test/resources"]}}
+   :test {:resource-paths ["env/test/resources"]}
+   :production {:env {:production true}}
+   :uberjar {:aot :all}}
   :target-path "target/%s"
   :clean-targets ^{:protect false} ["target"
                                     "resources/public/js"

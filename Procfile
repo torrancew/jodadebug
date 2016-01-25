@@ -1,1 +1,1 @@
-web: lein pdo cljsbuild once release, ring server-headless
+web: java $JVM_OPTS -cp target/jodadbg-standalone.jar clojure.main -m jodadbg.handler
