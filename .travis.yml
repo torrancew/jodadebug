@@ -1,0 +1,16 @@
+---
+language: clojure
+addons:
+  firefox: "38.0"
+
+env:
+  - SLIMERJSLAUNCHER=$(which firefox)
+  - DISPLAY=:99.0
+  - PATH=$PATH:$TRAVIS_BUILD_DIR/slimerjs-0.9.6
+
+before_script:
+  - "echo 'Starting XVFB'"
+  - "sh -e /etc/init.d/xvfb start"
+  - "echo 'Installing SlimerJS'"
+  - "wget http://download.slimerjs.org/releases/0.9.6/slimerjs-0.9.6.zip"
+  - "unzip slimerjs-0.9.6.zip"
