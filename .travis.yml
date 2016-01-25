@@ -4,9 +4,7 @@ addons:
   firefox: "38.0"
 
 env:
-  - SLIMERJSLAUNCHER=$(which firefox)
-  - DISPLAY=:99.0
-  - PATH=$PATH:$TRAVIS_BUILD_DIR/slimerjs-0.9.6
+  - SLIMERJSLAUNCHER=$(which firefox) DISPLAY=:99.0 PATH=$PATH:$TRAVIS_BUILD_DIR/slimerjs-0.9.6
 
 before_script:
   - "echo 'Starting XVFB'"
