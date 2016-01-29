@@ -9,7 +9,8 @@
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [ring.middleware.content-type :refer [wrap-content-type]]
-            [ring.middleware.not-modified :refer [wrap-not-modified]]))
+            [ring.middleware.not-modified :refer [wrap-not-modified]])
+  (:gen-class))
 
 (defn match-handler
   [timestamp pattern timezone]

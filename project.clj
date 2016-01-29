@@ -56,7 +56,8 @@
          :resource-paths ["env/dev/resources"]}
    :test {:resource-paths ["env/test/resources"]}
    :production {:env {:production true}}
-   :uberjar {:aot :all}}
+   :uberjar {:aot :all
+             :main jodadbg.handler}}
   :target-path "target/%s"
   :clean-targets ^{:protect false} ["target"
                                     "resources/public/js"
