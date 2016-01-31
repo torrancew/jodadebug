@@ -16,7 +16,8 @@
     {:timestamp nil
      :pattern "ISO8601"
      :timezone "UTC"
-     :isotime now}))
+     :isotime now
+     :error nil}))
 
 (defn header
   [data owner]
@@ -36,13 +37,19 @@
             response (<! (http/get "/match" {:query-params {"timestamp" timestamp
                                                             "pattern" pattern
                                                             "timezone" timezone}}))]
-        (when (= 200 (:status response))
+        (case (:status response)
+          200 (swap! app-state
+                     assoc :error nil
+                     :isotime (-> response
+                                  :body
+                                  :isotime
+                                  date/string->date-time))
+
           (swap! app-state
-                 assoc :isotime (-> response
-                                    :body
-                                    :body
-                                    :isotime
-                                    date/string->date-time))))))
+                 assoc :isotime nil
+                 :error (-> response
+                            :body
+                            :error))))))
 
 (defn inputs
   [data owner]
@@ -68,16 +75,30 @@
 (defn matches
   [data owner]
   (om/component
-    (dom/div nil
-             (p/panel {:header "Parsed Timestamps"}
-                      (p/panel {:header "UTC Time"
-                                :bs-style "success"}
-                               (date/date-time->string (:isotime @data)))
-                      (p/panel {:header "(Browser) Local Time"
-                                :bs-style "info"}
-                               (-> (:isotime @data)
-                                   date/utc-to-local
-                                   date/date-time->string))))))
+    (if (:isotime @data)
+      (dom/div nil
+               (p/panel {:header "Parsed Timestamps"}
+                        (p/panel {:header "UTC Time"
+                                  :bs-style "success"}
+                                 (date/date-time->string (:isotime @data)))
+                        (p/panel {:header "(Browser) Local Time"
+                                  :bs-style "info"}
+                                 (-> (:isotime @data)
+                                     date/utc-to-local
+                                     date/date-time->string))))
+      (dom/div nil
+               nil))))
+
+(defn errors
+  [data owner]
+  (om/component
+    (if (:error @data)
+      (dom/div nil
+               (p/panel {:header "Parsing Errors"
+                         :bs-style "danger"}
+                        (:error @data)))
+      (dom/div nil
+               nil))))
 
 (defn ^:export main
   [& args]
@@ -97,4 +118,10 @@
     matches
     app-state
     {:target (. js/document
-                 (getElementById "matches"))}))
+                 (getElementById "matches"))})
+  
+  (om/root
+    errors
+    app-state
+    {:target (. js/document
+                getElementById "errors")}))
