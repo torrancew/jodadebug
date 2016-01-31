@@ -1,1 +1,1 @@
-web: java $JVM_OPTS -cp target/uberjar/jodadbg-standalone.jar
+web: java $JVM_OPTS -jar target/uberjar/jodadbg-standalone.jar
