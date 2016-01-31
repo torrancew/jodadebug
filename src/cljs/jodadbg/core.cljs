@@ -27,29 +27,38 @@
                          (dom/a #js {:href "#" :className "navbar-brand"}
                                 "jodadbg")))))
 
+(defn get-match
+  [timestamp pattern timezone]
+  (http/get "/match"
+            {:query-params {"timestamp" timestamp
+                            "pattern" pattern
+                            "timezone" timezone}}))
+
+(defn handle-match
+  [resp]
+  (case (:status resp)
+    200 (swap! app-state
+               assoc
+               :error nil
+               :isotime (-> resp
+                            :body
+                            :isotime
+                            date/string->date-time))
+    (swap! app-state
+           assoc
+           :isotime nil
+           :error (-> resp
+                      :body
+                      :error))))
+
 (defn handle-change
   [k e owner]
   (swap! app-state
          assoc k (.. e -target -value))
-  (go (let [timestamp (:timestamp @app-state)
-            pattern (:pattern @app-state)
-            timezone (:timezone @app-state)
-            response (<! (http/get "/match" {:query-params {"timestamp" timestamp
-                                                            "pattern" pattern
-                                                            "timezone" timezone}}))]
-        (case (:status response)
-          200 (swap! app-state
-                     assoc :error nil
-                     :isotime (-> response
-                                  :body
-                                  :isotime
-                                  date/string->date-time))
-
-          (swap! app-state
-                 assoc :isotime nil
-                 :error (-> response
-                            :body
-                            :error))))))
+  (go (let [resp (<! (get-match (:timestamp @app-state)
+                                (:pattern @app-state)
+                                (:timezone @app-state)))]
+        (handle-match resp))))
 
 (defn inputs
   [data owner]
