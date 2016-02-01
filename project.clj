@@ -10,6 +10,7 @@
                  [ring/ring-jetty-adapter "1.4.0"]
                  [ring/ring-json "0.4.0"]
                  [ring/ring-defaults "0.1.5"]
+                 [ring.middleware.logger "0.5.0"]
                  [environ "1.0.1"]
                  ;; Frontend
                  [org.clojure/clojurescript "1.7.189"]

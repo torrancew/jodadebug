@@ -6,6 +6,7 @@
             [compojure.core           :refer [GET defroutes]]
             [ring.util.response       :refer [content-type status response resource-response]]
             [ring.middleware.json     :refer [wrap-json-response]]
+            [ring.middleware.logger   :refer [wrap-with-logger]]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [ring.middleware.content-type :refer [wrap-content-type]]
@@ -42,7 +43,8 @@
       (wrap-resource "public")
       (wrap-content-type)
       (wrap-not-modified)
-      (wrap-defaults api-defaults)))
+      (wrap-defaults api-defaults)
+      (wrap-with-logger)))
 
 (defn -main
   [& [port]]
